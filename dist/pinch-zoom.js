@@ -186,30 +186,30 @@ var PinchZoom = (function () {
     }
 
     function styleInject(css, ref) {
-        if (ref === void 0) ref = {};
-        var insertAt = ref.insertAt;
+      if ( ref === void 0 ) ref = {};
+      var insertAt = ref.insertAt;
 
-        if (!css || typeof document === 'undefined') { return; }
+      if (!css || typeof document === 'undefined') { return; }
 
-        var head = document.head || document.getElementsByTagName('head')[0];
-        var style = document.createElement('style');
-        style.type = 'text/css';
+      var head = document.head || document.getElementsByTagName('head')[0];
+      var style = document.createElement('style');
+      style.type = 'text/css';
 
-        if (insertAt === 'top') {
-            if (head.firstChild) {
-                head.insertBefore(style, head.firstChild);
-            } else {
-                head.appendChild(style);
-            }
+      if (insertAt === 'top') {
+        if (head.firstChild) {
+          head.insertBefore(style, head.firstChild);
         } else {
-            head.appendChild(style);
+          head.appendChild(style);
         }
+      } else {
+        head.appendChild(style);
+      }
 
-        if (style.styleSheet) {
-            style.styleSheet.cssText = css;
-        } else {
-            style.appendChild(document.createTextNode(css));
-        }
+      if (style.styleSheet) {
+        style.styleSheet.cssText = css;
+      } else {
+        style.appendChild(document.createTextNode(css));
+      }
     }
 
     var css = "pinch-zoom {\n  display: block;\n  overflow: hidden;\n  touch-action: none;\n  --scale: 1;\n  --x: 0;\n  --y: 0;\n}\n\npinch-zoom > * {\n  transform: translate(var(--x), var(--y)) scale(var(--scale));\n  transform-origin: 0 0;\n  will-change: transform;\n}\n";
@@ -252,7 +252,6 @@ var PinchZoom = (function () {
     }
     const MIN_SCALE = 0.01;
     const MAX_SCALE = Infinity;
-
     class PinchZoom extends HTMLElement {
         constructor() {
             super();
@@ -305,18 +304,16 @@ var PinchZoom = (function () {
         }
         get maxScale() {
             const attrValue = this.getAttribute(maxScaleAttr);
-            if (!attrValue) return MAX_SCALE;
-
+            if (!attrValue)
+                return MAX_SCALE;
             const value = parseFloat(attrValue);
-            if (Number.isFinite(value)) return Math.min(MAX_SCALE, value);
-
+            if (Number.isFinite(value))
+                return Math.min(MAX_SCALE, value);
             return MAX_SCALE;
         }
-
         set maxScale(value) {
             this.setAttribute(maxScaleAttr, String(value));
         }
-
         connectedCallback() {
             this._stageElChange();
         }
@@ -417,10 +414,11 @@ var PinchZoom = (function () {
          * Update transform values without checking bounds. This is only called in setTransform.
          */
         _updateTransform(scale, x, y, allowChangeEvent) {
-            // Avoid scaling to zero
+            // Avoid scaling out of min/max scale
             if (scale < this.minScale)
                 return;
-            if (scale > this.maxScale) return;
+            if (scale > this.maxScale)
+                return;
             // Return if there's no change
             if (scale === this.scale &&
                 x === this.x &&
