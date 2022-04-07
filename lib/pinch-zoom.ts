@@ -30,6 +30,8 @@ interface SetTransformOpts extends ChangeOptions {
 type ScaleRelativeToValues = 'container' | 'content';
 
 const minScaleAttr = 'min-scale';
+const maxScaleAttr = 'max-scale';
+
 
 export interface ScaleToOpts extends ChangeOptions {
   /** Transform origin. Can be a number, or string percent, eg "50%" */
@@ -80,6 +82,8 @@ function createPoint(): SVGPoint {
 }
 
 const MIN_SCALE = 0.01;
+const MAX_SCALE = Infinity;
+
 
 export default class PinchZoom extends HTMLElement {
   // The element that we'll transform.
@@ -89,7 +93,7 @@ export default class PinchZoom extends HTMLElement {
   // Current transform.
   private _transform: SVGMatrix = createMatrix();
 
-  static get observedAttributes() { return [minScaleAttr]; }
+  static get observedAttributes() { return [minScaleAttr, maxScaleAttr]; }
 
   constructor() {
     super();
@@ -119,7 +123,12 @@ export default class PinchZoom extends HTMLElement {
   attributeChangedCallback(name: string, oldValue: string, newValue: string) {
     if (name === minScaleAttr) {
       if (this.scale < this.minScale) {
-        this.setTransform({scale: this.minScale});
+        this.setTransform({ scale: this.minScale });
+      }
+    }
+    if (name === maxScaleAttr) {
+      if (this.scale > this.maxScale) {
+        this.setTransform({ scale: this.maxScale });
       }
     }
   }
@@ -136,6 +145,20 @@ export default class PinchZoom extends HTMLElement {
 
   set minScale(value: number) {
     this.setAttribute(minScaleAttr, String(value));
+  }
+
+  get maxScale(): number {
+    const attrValue = this.getAttribute(maxScaleAttr);
+    if (!attrValue) return MAX_SCALE;
+
+    const value = parseFloat(attrValue);
+    if (Number.isFinite(value)) return Math.min(MAX_SCALE, value);
+
+    return MAX_SCALE;
+  }
+
+  set maxScale(value: number) {
+    this.setAttribute(maxScaleAttr, String(value));
   }
 
   connectedCallback() {
@@ -269,8 +292,9 @@ export default class PinchZoom extends HTMLElement {
    * Update transform values without checking bounds. This is only called in setTransform.
    */
   private _updateTransform(scale: number, x: number, y: number, allowChangeEvent: boolean) {
-    // Avoid scaling to zero
+    // Avoid scaling out of min/max scale
     if (scale < this.minScale) return;
+    if (scale > this.maxScale) return;
 
     // Return if there's no change
     if (
