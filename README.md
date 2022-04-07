@@ -1,3 +1,5 @@
+(added max-scale attribute from GoogleChromeLabs/pinch-zoom#9 )
+
 # <pinch-zoom>
 
 A web component for pinch zooming DOM elements.
